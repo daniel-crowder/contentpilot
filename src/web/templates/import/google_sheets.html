@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Google Sheets - Social Media Content Publisher</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.index') }}">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('content.index') }}">
+                                Content
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.calendar') }}">
+                                Calendar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('teams.index') }}">
+                                Teams
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.analytics') }}">
+                                Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('import.index') }}">
+                                Import Data
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.profile') }}">
+                                Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Import from Google Sheets</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <a href="{{ url_for('import.index') }}" class="btn btn-sm btn-outline-secondary">Back to Import</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Connect to Google Sheet</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST">
+                                    <div class="mb-3">
+                                        <label for="sheet_id" class="form-label">Google Sheet ID</label>
+                                        <input type="text" class="form-control" id="sheet_id" name="sheet_id" required>
+                                        <div class="form-text">
+                                            The Sheet ID is the part of the URL between /d/ and /edit. <br>
+                                            Example: For https://docs.google.com/spreadsheets/d/<strong>1a2b3c4d5e6f</strong>/edit, the ID is <strong>1a2b3c4d5e6f</strong>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="range_name" class="form-label">Range (Optional)</label>
+                                        <input type="text" class="form-control" id="range_name" name="range_name" placeholder="A1:Z1000">
+                                        <div class="form-text">
+                                            Specify the range of cells to import. Default is A1:Z1000.
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Connect and Preview</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Google Sheets Requirements</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Your Google Sheet must:</p>
+                                <ul>
+                                    <li>Be publicly accessible or shared with the service account</li>
+                                    <li>Have a header row with the required column names</li>
+                                    <li>Include these required columns:
+                                        <ul>
+                                            <li><strong>publish_date</strong>: Date to publish (YYYY-MM-DD)</li>
+                                            <li><strong>platform</strong>: Platform to publish to (twitter, linkedin, substack)</li>
+                                            <li><strong>content</strong>: The content to publish</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                <p>Optional columns:</p>
+                                <ul>
+                                    <li><strong>title</strong>: Title (required for Substack)</li>
+                                    <li><strong>subtitle</strong>: Subtitle (for Substack)</li>
+                                    <li><strong>url</strong>: URL to share (for LinkedIn)</li>
+                                    <li><strong>publish_time</strong>: Time to publish (HH:MM, default: 09:00)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Sample Google Sheet Format</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>publish_date</th>
+                                                <th>platform</th>
+                                                <th>content</th>
+                                                <th>title</th>
+                                                <th>subtitle</th>
+                                                <th>url</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>2023-12-01</td>
+                                                <td>twitter</td>
+                                                <td>Just launched our new product! #excited</td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                            <tr>
+                                                <td>2023-12-01</td>
+                                                <td>linkedin</td>
+                                                <td>Excited to announce our new product launch!</td>
+                                                <td>New Product Launch</td>
+                                                <td></td>
+                                                <td>https://example.com</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2023-12-01</td>
+                                                <td>substack</td>
+                                                <td>&lt;h1&gt;New Product Launch&lt;/h1&gt;&lt;p&gt;We're excited to announce...&lt;/p&gt;</td>
+                                                <td>New Product Launch</td>
+                                                <td>Exciting news for our customers</td>
+                                                <td></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

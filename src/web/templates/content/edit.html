@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Content - Social Media Content Publisher</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.index') }}">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('content.index') }}">
+                                Content
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.calendar') }}">
+                                Calendar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('teams.index') }}">
+                                Teams
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.analytics') }}">
+                                Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.profile') }}">
+                                Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Edit Content</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <a href="{{ url_for('content.index') }}" class="btn btn-sm btn-outline-secondary">Back to Content List</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Edit Content Form -->
+                <div class="card">
+                    <div class="card-header">
+                        Edit Content
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('content.edit', content_id=content.id) }}" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="platform" class="form-label">Platform</label>
+                                <select class="form-select" id="platform" name="platform" required>
+                                    <option value="">Select Platform</option>
+                                    <option value="twitter">Twitter</option>
+                                    <option value="linkedin">LinkedIn</option>
+                                    <option value="substack">Substack</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title (Required for Substack)</label>
+                                <input type="text" class="form-control" id="title" name="title" value="{{ content.title or '' }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="subtitle" class="form-label">Subtitle (Optional for Substack)</label>
+                                <input type="text" class="form-control" id="subtitle" name="subtitle" value="{{ content.subtitle or '' }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="content" class="form-label">Content</label>
+                                <textarea class="form-control" id="content" name="content" rows="6" required>{{ content.content }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="url" class="form-label">URL (Optional for LinkedIn)</label>
+                                <input type="url" class="form-control" id="url" name="url" value="{{ content.url or '' }}">
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="publish_date" class="form-label">Publish Date</label>
+                                    <input type="date" class="form-control" id="publish_date" name="publish_date" value="{{ content.publish_date.strftime('%Y-%m-%d') }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="publish_time" class="form-label">Publish Time</label>
+                                    <input type="time" class="form-control" id="publish_time" name="publish_time" value="{{ content.publish_time or '09:00' }}">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="media" class="form-label">Add Media Attachments</label>
+                                <input type="file" class="form-control" id="media" name="media" multiple>
+                            </div>
+
+                            <!-- Existing Media Attachments -->
+                            {% if attachments %}
+                            <div class="mb-3">
+                                <label class="form-label">Existing Media Attachments</label>
+                                <div class="row">
+                                    {% for attachment in attachments %}
+                                    <div class="col-md-4 mb-2">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{ attachment.file_name }}</h5>
+                                                <p class="card-text">
+                                                    Type: {{ attachment.file_type or 'Unknown' }}<br>
+                                                    Size: {{ (attachment.file_size / 1024)|round(2) }} KB
+                                                </p>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="delete_attachment" value="{{ attachment.id }}" id="delete_{{ attachment.id }}">
+                                                    <label class="form-check-label" for="delete_{{ attachment.id }}">
+                                                        Delete this attachment
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="is_draft" name="is_draft">
+                                <label class="form-check-label" for="is_draft">Save as Draft</label>
+                                <small class="form-text text-muted">
+                                    Note: When using the "Publish Now" button, content marked as draft will be published as a draft on platforms that support it (like Substack).
+                                </small>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="{{ url_for('content.index') }}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Update Content</button>
+                                <button type="submit" class="btn btn-success" formaction="{{ url_for('content.publish', content_id=content.id) }}">Publish Now</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Delete Content -->
+                <div class="card mt-4">
+                    <div class="card-header bg-danger text-white">
+                        Danger Zone
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Delete Content</h5>
+                        <p class="card-text">Once you delete this content, there is no going back. Please be certain.</p>
+                        <form method="POST" action="{{ url_for('content.delete', content_id=content.id) }}" onsubmit="return confirm('Are you sure you want to delete this content? This action cannot be undone.');">
+                            <button type="submit" class="btn btn-danger">Delete Content</button>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Set the platform value based on the content's platform
+        document.addEventListener('DOMContentLoaded', function() {
+            const platformSelect = document.getElementById('platform');
+            const contentPlatform = "{{ content.platform }}";
+            if (contentPlatform) {
+                platformSelect.value = contentPlatform;
+            }
+
+            // Set the is_draft checkbox based on the content's is_draft value
+            const isDraftCheckbox = document.getElementById('is_draft');
+            const isDraft = "{{ content.is_draft }}" === "True";
+            isDraftCheckbox.checked = isDraft;
+        });
+    </script>
+</body>
+</html>

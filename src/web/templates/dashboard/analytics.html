@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Social Media Content Publisher</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.index') }}">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('content.index') }}">
+                                Content
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.calendar') }}">
+                                Calendar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('teams.index') }}">
+                                Teams
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('dashboard.analytics') }}">
+                                Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('import.index') }}">
+                                Import Data
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.profile') }}">
+                                Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Analytics Dashboard</h1>
+                </div>
+
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Platform Analytics -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                Twitter Analytics
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="text-center mb-3">
+                                            <h5>Views</h5>
+                                            <h2>{{ analytics_data.twitter.views }}</h2>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-center mb-3">
+                                            <h5>Likes</h5>
+                                            <h2>{{ analytics_data.twitter.likes }}</h2>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-center mb-3">
+                                            <h5>Shares</h5>
+                                            <h2>{{ analytics_data.twitter.shares }}</h2>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-center mb-3">
+                                            <h5>Comments</h5>
+                                            <h2>{{ analytics_data.twitter.comments }}</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                LinkedIn Analytics
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="text-center mb-3">
+                                            <h5>Views</h5>
+                                            <h2>{{ analytics_data.linkedin.views }}</h2>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-center mb-3">
+                                            <h5>Likes</h5>
+                                            <h2>{{ analytics_data.linkedin.likes }}</h2>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-center mb-3">
+                                            <h5>Shares</h5>
+                                            <h2>{{ analytics_data.linkedin.shares }}</h2>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-center mb-3">
+                                            <h5>Comments</h5>
+                                            <h2>{{ analytics_data.linkedin.comments }}</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                Substack Analytics
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="text-center mb-3">
+                                            <h5>Views</h5>
+                                            <h2>{{ analytics_data.substack.views }}</h2>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-center mb-3">
+                                            <h5>Likes</h5>
+                                            <h2>{{ analytics_data.substack.likes }}</h2>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-center mb-3">
+                                            <h5>Shares</h5>
+                                            <h2>{{ analytics_data.substack.shares }}</h2>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-center mb-3">
+                                            <h5>Comments</h5>
+                                            <h2>{{ analytics_data.substack.comments }}</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Analytics -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                Detailed Analytics
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Platform</th>
+                                            <th>Views</th>
+                                            <th>Likes</th>
+                                            <th>Shares</th>
+                                            <th>Comments</th>
+                                            <th>Engagement Rate</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Twitter</td>
+                                            <td>{{ analytics_data.twitter.views }}</td>
+                                            <td>{{ analytics_data.twitter.likes }}</td>
+                                            <td>{{ analytics_data.twitter.shares }}</td>
+                                            <td>{{ analytics_data.twitter.comments }}</td>
+                                            <td>
+                                                {% if analytics_data.twitter.views > 0 %}
+                                                    {{ ((analytics_data.twitter.likes + analytics_data.twitter.shares + analytics_data.twitter.comments) / analytics_data.twitter.views * 100) | round(2) }}%
+                                                {% else %}
+                                                    0%
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>LinkedIn</td>
+                                            <td>{{ analytics_data.linkedin.views }}</td>
+                                            <td>{{ analytics_data.linkedin.likes }}</td>
+                                            <td>{{ analytics_data.linkedin.shares }}</td>
+                                            <td>{{ analytics_data.linkedin.comments }}</td>
+                                            <td>
+                                                {% if analytics_data.linkedin.views > 0 %}
+                                                    {{ ((analytics_data.linkedin.likes + analytics_data.linkedin.shares + analytics_data.linkedin.comments) / analytics_data.linkedin.views * 100) | round(2) }}%
+                                                {% else %}
+                                                    0%
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Substack</td>
+                                            <td>{{ analytics_data.substack.views }}</td>
+                                            <td>{{ analytics_data.substack.likes }}</td>
+                                            <td>{{ analytics_data.substack.shares }}</td>
+                                            <td>{{ analytics_data.substack.comments }}</td>
+                                            <td>
+                                                {% if analytics_data.substack.views > 0 %}
+                                                    {{ ((analytics_data.substack.likes + analytics_data.substack.shares + analytics_data.substack.comments) / analytics_data.substack.views * 100) | round(2) }}%
+                                                {% else %}
+                                                    0%
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Platform Comparison -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                Platform Comparison
+                            </div>
+                            <div class="card-body">
+                                <p class="text-center">
+                                    Platform comparison chart would be displayed here.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

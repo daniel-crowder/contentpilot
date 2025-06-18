@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Social Media Content Publisher</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('dashboard.index') }}">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('content.index') }}">
+                                Content
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.calendar') }}">
+                                Calendar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('teams.index') }}">
+                                Teams
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.analytics') }}">
+                                Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('import.index') }}">
+                                Import Data
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.profile') }}">
+                                Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Dashboard</h1>
+                </div>
+
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Platform stats -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                Content by Platform
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Twitter
+                                        <span class="badge bg-primary rounded-pill">{{ platform_counts.get('twitter', 0) }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        LinkedIn
+                                        <span class="badge bg-primary rounded-pill">{{ platform_counts.get('linkedin', 0) }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Substack
+                                        <span class="badge bg-primary rounded-pill">{{ platform_counts.get('substack', 0) }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                Content by Status
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Draft
+                                        <span class="badge bg-secondary rounded-pill">{{ status_counts.get('draft', 0) }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Scheduled
+                                        <span class="badge bg-info rounded-pill">{{ status_counts.get('scheduled', 0) }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Published
+                                        <span class="badge bg-success rounded-pill">{{ status_counts.get('published', 0) }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                Analytics Summary (30 days)
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Views
+                                        <span class="badge bg-primary rounded-pill">{{ analytics_summary.get('views', 0) }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Likes
+                                        <span class="badge bg-primary rounded-pill">{{ analytics_summary.get('likes', 0) }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Shares
+                                        <span class="badge bg-primary rounded-pill">{{ analytics_summary.get('shares', 0) }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Comments
+                                        <span class="badge bg-primary rounded-pill">{{ analytics_summary.get('comments', 0) }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent content -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Recent Content
+                            </div>
+                            <div class="card-body">
+                                {% if recent_content %}
+                                    <div class="list-group">
+                                        {% for content in recent_content %}
+                                            <a href="{{ url_for('content.edit', content_id=content.id) }}" class="list-group-item list-group-item-action">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h5 class="mb-1">{{ content.title or content.content[:30] + '...' if content.content|length > 30 else content.content }}</h5>
+                                                    <small>{{ content.platform }}</small>
+                                                </div>
+                                                <p class="mb-1">{{ content.content[:100] + '...' if content.content|length > 100 else content.content }}</p>
+                                                <small>Created: {{ content.created_at.strftime('%Y-%m-%d') }}</small>
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p>No recent content found.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Upcoming Content
+                            </div>
+                            <div class="card-body">
+                                {% if upcoming_content %}
+                                    <div class="list-group">
+                                        {% for content in upcoming_content %}
+                                            <a href="{{ url_for('content.edit', content_id=content.id) }}" class="list-group-item list-group-item-action">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h5 class="mb-1">{{ content.title or content.content[:30] + '...' if content.content|length > 30 else content.content }}</h5>
+                                                    <small>{{ content.platform }}</small>
+                                                </div>
+                                                <p class="mb-1">{{ content.content[:100] + '...' if content.content|length > 100 else content.content }}</p>
+                                                <small>Scheduled: {{ content.publish_date.strftime('%Y-%m-%d') }} at {{ content.publish_time }}</small>
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p>No upcoming content found.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent publishing history -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                Recent Publishing History
+                            </div>
+                            <div class="card-body">
+                                {% if recent_history %}
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Platform</th>
+                                                <th>Status</th>
+                                                <th>Published At</th>
+                                                <th>Post URL</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for history in recent_history %}
+                                                <tr>
+                                                    <td>{{ history.platform }}</td>
+                                                    <td>
+                                                        {% if history.status == 'success' %}
+                                                            <span class="badge bg-success">Success</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">Error</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ history.published_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                    <td>
+                                                        {% if history.platform_post_url %}
+                                                            <a href="{{ history.platform_post_url }}" target="_blank">View Post</a>
+                                                        {% else %}
+                                                            -
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <p>No publishing history found.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

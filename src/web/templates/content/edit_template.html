@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Template - Social Media Content Publisher</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.index') }}">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('content.index') }}">
+                                Content
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.calendar') }}">
+                                Calendar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('teams.index') }}">
+                                Teams
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.analytics') }}">
+                                Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.profile') }}">
+                                Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Edit Content Template</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <a href="{{ url_for('content.templates') }}" class="btn btn-sm btn-outline-secondary">Back to Templates</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Edit Template Form -->
+                <div class="card">
+                    <div class="card-header">
+                        Edit Template
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('content.edit_template', template_id=template.id) }}">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Template Name</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ template.name }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <input type="text" class="form-control" id="description" name="description" value="{{ template.description or '' }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="platform" class="form-label">Platform</label>
+                                <select class="form-select" id="platform" name="platform" required>
+                                    <option value="">Select Platform</option>
+                                    <option value="twitter">Twitter</option>
+                                    <option value="linkedin">LinkedIn</option>
+                                    <option value="substack">Substack</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="template_content" class="form-label">Template Content</label>
+                                <textarea class="form-control" id="template_content" name="template_content" rows="10" required>{{ template.template_content }}</textarea>
+                                <div class="form-text">
+                                    Use placeholders like {title}, {content}, {url} that will be replaced when using the template.
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="{{ url_for('content.templates') }}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Update Template</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Delete Template -->
+                <div class="card mt-4">
+                    <div class="card-header bg-danger text-white">
+                        Danger Zone
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Delete Template</h5>
+                        <p class="card-text">Once you delete this template, there is no going back. Please be certain.</p>
+                        <form method="POST" action="{{ url_for('content.delete_template', template_id=template.id) }}" onsubmit="return confirm('Are you sure you want to delete this template? This action cannot be undone.');">
+                            <button type="submit" class="btn btn-danger">Delete Template</button>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set the platform value based on the template's platform
+            const platformSelect = document.getElementById('platform');
+            const templatePlatform = "{{ template.platform }}";
+            if (templatePlatform) {
+                platformSelect.value = templatePlatform;
+            }
+        });
+    </script>
+</body>
+</html>

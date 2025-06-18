@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Social Media Content Publisher</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-center">User Profile</h3>
+                    </div>
+                    <div class="card-body">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form method="POST" action="{{ url_for('auth.profile') }}">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="username" value="{{ user.username }}" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" value="{{ user.email }}" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="first_name" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name or '' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="last_name" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name or '' }}">
+                                </div>
+                            </div>
+
+                            <hr>
+                            <h4>Change Password</h4>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="new_password" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="new_password" name="new_password">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                                </div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                            </div>
+                        </form>
+
+                        <hr>
+                        <h4>Platform Connections</h4>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">LinkedIn</h5>
+                                        {% if linkedin_connected %}
+                                            <p class="text-success">
+                                                <i class="bi bi-check-circle-fill"></i> Connected
+                                                {% if linkedin_expires_at %}
+                                                    <br><small>Expires: {{ linkedin_expires_at.strftime('%Y-%m-%d') }}</small>
+                                                {% endif %}
+                                            </p>
+                                            <a href="{{ url_for('auth.linkedin_authorize') }}" class="btn btn-outline-primary">Reconnect</a>
+                                        {% else %}
+                                            <p class="text-muted">Not connected</p>
+                                            <a href="{{ url_for('auth.linkedin_authorize') }}" class="btn btn-primary">Connect to LinkedIn</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Add other platforms here in the future -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</body>
+</html>

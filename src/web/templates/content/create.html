@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Content - Social Media Content Publisher</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.index') }}">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('content.index') }}">
+                                Content
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.calendar') }}">
+                                Calendar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('teams.index') }}">
+                                Teams
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.analytics') }}">
+                                Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.profile') }}">
+                                Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Create New Content</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <a href="{{ url_for('content.index') }}" class="btn btn-sm btn-outline-secondary">Back to Content List</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Create Content Form -->
+                <div class="card">
+                    <div class="card-header">
+                        Create Content
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('content.create') }}" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="platform" class="form-label">Platform</label>
+                                <select class="form-select" id="platform" name="platform" required>
+                                    <option value="">Select Platform</option>
+                                    <option value="twitter">Twitter</option>
+                                    <option value="linkedin">LinkedIn</option>
+                                    <option value="substack">Substack</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title (Required for Substack)</label>
+                                <input type="text" class="form-control" id="title" name="title">
+                            </div>
+                            <div class="mb-3">
+                                <label for="subtitle" class="form-label">Subtitle (Optional for Substack)</label>
+                                <input type="text" class="form-control" id="subtitle" name="subtitle">
+                            </div>
+                            <div class="mb-3">
+                                <label for="content" class="form-label">Content</label>
+                                <textarea class="form-control" id="content" name="content" rows="6" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="url" class="form-label">URL (Optional for LinkedIn)</label>
+                                <input type="url" class="form-control" id="url" name="url">
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="publish_date" class="form-label">Publish Date</label>
+                                    <input type="date" class="form-control" id="publish_date" name="publish_date" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="publish_time" class="form-label">Publish Time</label>
+                                    <input type="time" class="form-control" id="publish_time" name="publish_time" value="09:00">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="media" class="form-label">Media Attachments</label>
+                                <input type="file" class="form-control" id="media" name="media" multiple>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="is_draft" name="is_draft" checked>
+                                <label class="form-check-label" for="is_draft">Save as Draft</label>
+                                <small class="form-text text-muted">
+                                    Note: When using the "Publish Now" button, content marked as draft will be published as a draft on platforms that support it (like Substack).
+                                </small>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="{{ url_for('content.index') }}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Create Content</button>
+                                <button type="submit" class="btn btn-success" formaction="{{ url_for('content.create_and_publish') }}">Create & Publish</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Template Selection -->
+                {% if templates %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        Use Template
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="template_select" class="form-label">Select Template</label>
+                            <select class="form-select" id="template_select">
+                                <option value="">Select a Template</option>
+                                {% for template in templates %}
+                                    <option value="{{ template.id }}">{{ template.name }} ({{ template.platform }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" id="apply_template" class="btn btn-outline-primary">Apply Template</button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // JavaScript to handle template selection
+        document.addEventListener('DOMContentLoaded', function() {
+            const templateSelect = document.getElementById('template_select');
+            const applyTemplateBtn = document.getElementById('apply_template');
+
+            if (applyTemplateBtn) {
+                applyTemplateBtn.addEventListener('click', function() {
+                    const templateId = templateSelect.value;
+                    if (templateId) {
+                        fetch(`{{ url_for('content.get_template', template_id=0) }}`.replace('0', templateId))
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('platform').value = data.platform;
+                                document.getElementById('content').value = data.template_content;
+                            })
+                            .catch(error => console.error('Error:', error));
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+publish_date,platform,content,title,subtitle,url
+2023-12-01,twitter,"Just launched our new social media content publisher tool! Check it out at https://github.com/example/social-media-publisher #automation #socialmedia",,
+2023-12-01,linkedin,"Excited to announce the launch of our new social media content publisher tool! This tool allows you to schedule and publish content to multiple platforms from a single source.
+
+#SocialMedia #Automation #ContentPublishing","New Tool Launch: Social Media Content Publisher",,"https://github.com/example/social-media-publisher"
+2023-12-01,substack,"<h1>Introducing Our New Social Media Content Publisher</h1>
+
+<p>We're excited to announce the launch of our new tool that makes publishing to social media platforms easier than ever.</p>
+
+<h2>Key Features:</h2>
+<ul>
+  <li>Schedule posts in advance</li>
+  <li>Publish to multiple platforms</li>
+  <li>Use CSV or Google Sheets as your content source</li>
+</ul>
+
+<p>Stay tuned for more updates!</p>","Introducing Our New Social Media Content Publisher","A new tool for automating your social media workflow"
+2023-12-02,twitter,"Day 2 of our social media publisher launch! The response has been amazing. Thanks to everyone who's tried it out! #feedback #gratitude",,
+2023-12-03,linkedin,"We've received great feedback on our social media publisher tool. Here are some of the ways people are using it:
+
+1. Content marketing teams scheduling posts across platforms
+2. Small businesses automating their social media presence
+3. Creators maintaining consistent posting schedules
+
+How would you use it?","Social Media Publisher: Use Cases","","https://github.com/example/social-media-publisher"

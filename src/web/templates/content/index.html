@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Management - Social Media Content Publisher</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .platform-icon.twitter {
+            color: #1DA1F2;
+        }
+        .platform-icon.linkedin {
+            color: #0077B5;
+        }
+        .platform-icon.substack {
+            color: #FF6719;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.index') }}">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('content.index') }}">
+                                Content
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.calendar') }}">
+                                Calendar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('teams.index') }}">
+                                Teams
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.analytics') }}">
+                                Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.profile') }}">
+                                Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Content Management</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <a href="{{ url_for('content.create') }}" class="btn btn-sm btn-outline-secondary">Create New Content</a>
+                            <a href="{{ url_for('content.templates') }}" class="btn btn-sm btn-outline-secondary">Templates</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        Filters
+                    </div>
+                    <div class="card-body">
+                        <form method="GET" action="{{ url_for('content.index') }}" class="row g-3">
+                            <div class="col-md-4">
+                                <label for="platform" class="form-label">Platform</label>
+                                <select class="form-select" id="platform" name="platform">
+                                    <option value="">All Platforms</option>
+                                    <option value="twitter">Twitter</option>
+                                    <option value="linkedin">LinkedIn</option>
+                                    <option value="substack">Substack</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="">All Statuses</option>
+                                    <option value="draft">Draft</option>
+                                    <option value="scheduled">Scheduled</option>
+                                    <option value="published">Published</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                                <a href="{{ url_for('content.index') }}" class="btn btn-secondary ms-2">Clear</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Content List -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Content List</span>
+                        <div class="bulk-actions" id="bulkActionsContainer" style="display: none;">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Bulk Actions
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" id="bulkPublish">Publish</a></li>
+                                    <li><a class="dropdown-item" href="#" id="bulkMarkAsDraft">Mark as Draft</a></li>
+                                    <li><a class="dropdown-item" href="#" id="bulkMarkAsScheduled">Mark as Scheduled</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="#" id="bulkDelete">Delete</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if contents %}
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="selectAll">
+                                                </div>
+                                            </th>
+                                            <th>Platform</th>
+                                            <th>Title/Content</th>
+                                            <th>Publish Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for content in contents %}
+                                            <tr>
+                                                <td>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input content-checkbox" type="checkbox" value="{{ content.id }}" data-platform="{{ content.platform }}" data-status="{% if content.is_published %}published{% elif content.is_draft %}draft{% else %}scheduled{% endif %}">
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {% if content.platform == 'twitter' %}
+                                                        <i class="bi bi-twitter platform-icon twitter" title="Twitter"></i>
+                                                    {% elif content.platform == 'linkedin' %}
+                                                        <i class="bi bi-linkedin platform-icon linkedin" title="LinkedIn"></i>
+                                                    {% elif content.platform == 'substack' %}
+                                                        <i class="bi bi-journal-text platform-icon substack" title="Substack"></i>
+                                                    {% else %}
+                                                        {{ content.platform }}
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if content.title %}
+                                                        <strong>{{ content.title }}</strong><br>
+                                                    {% endif %}
+                                                    {{ content.content[:100] }}{% if content.content|length > 100 %}...{% endif %}
+                                                </td>
+                                                <td>{{ content.publish_date.strftime('%Y-%m-%d') }} {{ content.publish_time }}</td>
+                                                <td>
+                                                    {% if content.is_published %}
+                                                        <span class="badge bg-success">Published</span>
+                                                    {% elif content.is_draft %}
+                                                        <span class="badge bg-secondary">Draft</span>
+                                                    {% else %}
+                                                        <span class="badge bg-info">Scheduled</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <a href="{{ url_for('content.edit', content_id=content.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                                    <form action="{{ url_for('content.delete', content_id=content.id) }}" method="POST" class="d-inline">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p>No content found.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const contentCheckboxes = document.querySelectorAll('.content-checkbox');
+            const bulkActionsContainer = document.getElementById('bulkActionsContainer');
+
+            // Handle "Select All" checkbox
+            selectAllCheckbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                contentCheckboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+                updateBulkActionsVisibility();
+            });
+
+            // Handle individual checkboxes
+            contentCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateSelectAllCheckbox();
+                    updateBulkActionsVisibility();
+                });
+            });
+
+            // Update "Select All" checkbox state based on individual checkboxes
+            function updateSelectAllCheckbox() {
+                const checkedCount = document.querySelectorAll('.content-checkbox:checked').length;
+                selectAllCheckbox.checked = checkedCount === contentCheckboxes.length && contentCheckboxes.length > 0;
+                selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < contentCheckboxes.length;
+            }
+
+            // Show/hide bulk actions based on selection
+            function updateBulkActionsVisibility() {
+                const checkedCount = document.querySelectorAll('.content-checkbox:checked').length;
+                bulkActionsContainer.style.display = checkedCount > 0 ? 'block' : 'none';
+            }
+
+            // Handle bulk actions
+            document.getElementById('bulkPublish').addEventListener('click', function(e) {
+                e.preventDefault();
+                performBulkAction('publish');
+            });
+
+            document.getElementById('bulkMarkAsDraft').addEventListener('click', function(e) {
+                e.preventDefault();
+                performBulkAction('mark_as_draft');
+            });
+
+            document.getElementById('bulkMarkAsScheduled').addEventListener('click', function(e) {
+                e.preventDefault();
+                performBulkAction('mark_as_scheduled');
+            });
+
+            document.getElementById('bulkDelete').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('Are you sure you want to delete the selected content items? This action cannot be undone.')) {
+                    performBulkAction('delete');
+                }
+            });
+
+            // Function to perform bulk actions
+            function performBulkAction(action) {
+                const selectedIds = Array.from(document.querySelectorAll('.content-checkbox:checked'))
+                    .map(checkbox => checkbox.value);
+
+                if (selectedIds.length === 0) {
+                    return;
+                }
+
+                // Create a form to submit the action
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{{ url_for('content.bulk_action', action='ACTION_PLACEHOLDER') }}".replace('ACTION_PLACEHOLDER', action);
+
+                // Add CSRF token if needed
+                // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                // const csrfInput = document.createElement('input');
+                // csrfInput.type = 'hidden';
+                // csrfInput.name = 'csrf_token';
+                // csrfInput.value = csrfToken;
+                // form.appendChild(csrfInput);
+
+                // Add selected IDs
+                selectedIds.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'content_ids';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    </script>
+</body>
+</html>

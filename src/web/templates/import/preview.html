@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Import Data - Social Media Content Publisher</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.index') }}">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('content.index') }}">
+                                Content
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.calendar') }}">
+                                Calendar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('teams.index') }}">
+                                Teams
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard.analytics') }}">
+                                Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('import.index') }}">
+                                Import Data
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.profile') }}">
+                                Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Preview Import Data</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            {% if source_type == 'csv' %}
+                                <a href="{{ url_for('import.csv_import') }}" class="btn btn-sm btn-outline-secondary">Back to CSV Import</a>
+                            {% elif source_type == 'google_sheets' %}
+                                <a href="{{ url_for('import.google_sheets_import') }}" class="btn btn-sm btn-outline-secondary">Back to Google Sheets Import</a>
+                            {% else %}
+                                <a href="{{ url_for('import.index') }}" class="btn btn-sm btn-outline-secondary">Back to Import</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Formatting Issues -->
+                {% if issues %}
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h5>Formatting Issues</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>The following issues were found in your data:</p>
+                                    <ul>
+                                        {% for issue in issues %}
+                                            <li>{{ issue }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    <p>Please fix these issues and try again.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h5>Data Validation Successful</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Your data has been validated and is ready to import.</p>
+                                    <form method="POST" action="{{ url_for('import.import_data') }}">
+                                        <input type="hidden" name="source_type" value="{{ source_type }}">
+                                        <button type="submit" class="btn btn-primary">Import Data</button>
+                                        <div class="form-text">
+                                            Data will be imported as drafts. You can review and publish them from the Content page.
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Data Preview -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Data Preview</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    {{ table_html|safe }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
