@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Content - Social Media Content Publisher</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Quill.js CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0-rc.2/dist/quill.snow.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid">
@@ -88,10 +90,11 @@
                                     <option value="twitter">Twitter</option>
                                     <option value="linkedin">LinkedIn</option>
                                     <option value="substack">Substack</option>
+                                    <option value="wordpress">WordPress</option>
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="title" class="form-label">Title (Required for Substack)</label>
+                                <label for="title" class="form-label">Title (Required for Substack and WordPress)</label>
                                 <input type="text" class="form-control" id="title" name="title" value="{{ content.title or '' }}">
                             </div>
                             <div class="mb-3">
@@ -100,7 +103,10 @@
                             </div>
                             <div class="mb-3">
                                 <label for="content" class="form-label">Content</label>
-                                <textarea class="form-control" id="content" name="content" rows="6" required>{{ content.content }}</textarea>
+                                <!-- Hidden textarea to store the HTML content -->
+                                <textarea class="form-control d-none" id="content" name="content" rows="6" required>{{ content.content }}</textarea>
+                                <!-- Quill editor container -->
+                                <div id="editor-container" style="height: 300px;"></div>
                             </div>
                             <div class="mb-3">
                                 <label for="url" class="form-label">URL (Optional for LinkedIn)</label>
@@ -183,9 +189,37 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Quill.js JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0-rc.2/dist/quill.min.js"></script>
     <script>
-        // Set the platform value based on the content's platform
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Quill
+            const quill = new Quill('#editor-container', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                },
+                placeholder: 'Compose your content here...'
+            });
+
+            // Set initial content from textarea
+            const contentTextarea = document.getElementById('content');
+            quill.root.innerHTML = contentTextarea.value;
+
+            // Sync Quill content with hidden textarea before form submission
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function() {
+                contentTextarea.value = quill.root.innerHTML;
+            });
+
+            // Set the platform value based on the content's platform
             const platformSelect = document.getElementById('platform');
             const contentPlatform = "{{ content.platform }}";
             if (contentPlatform) {

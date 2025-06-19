@@ -146,15 +146,63 @@ class DatabaseDataSource(DataSource):
         finally:
             close_session(session)
 
+    def get_publishing_history(self, content_id: int, platform: str = None) -> Optional[Dict[str, Any]]:
+        """
+        Get the publishing history for a content item.
+
+        Args:
+            content_id: ID of the content
+            platform: Optional platform filter
+
+        Returns:
+            Dictionary with publishing history information, or None if not found
+        """
+        from ..database.models import PublishingHistory
+
+        session = get_session()
+
+        try:
+            # Build the query - only filter by content_id
+            query = session.query(PublishingHistory).filter(
+                PublishingHistory.content_id == int(content_id)
+            )
+
+            # Add platform filter if provided
+            if platform:
+                query = query.filter(PublishingHistory.platform == platform)
+
+            # Get the most recent publishing history
+            history = query.order_by(PublishingHistory.published_at.desc()).first()
+
+            if not history:
+                return None
+
+            return {
+                'id': history.id,
+                'content_id': history.content_id,
+                'platform': history.platform,
+                'status': history.status,
+                'platform_post_id': history.platform_post_id,
+                'platform_post_url': history.platform_post_url,
+                'published_at': history.published_at
+            }
+
+        except Exception as e:
+            print(f"Error getting publishing history: {str(e)}")
+            return None
+
+        finally:
+            close_session(session)
+
     def add_content(self, platform: str, content: str, publish_date: str, title: str = None, subtitle: str = None, url: str = None, publish_time: str = "09:00", author_id: int = None, team_id: int = None, is_draft: bool = True) -> int:
         """
         Add new content to the database.
 
         Args:
-            platform: Platform to publish to (twitter, linkedin, substack)
+            platform: Platform to publish to (twitter, linkedin, substack, wordpress)
             content: The content to publish
             publish_date: Date to publish the content (YYYY-MM-DD)
-            title: Title (required for Substack, optional for others)
+            title: Title (required for Substack and WordPress, optional for others)
             subtitle: Subtitle (optional, for Substack)
             url: URL to share (optional, for LinkedIn)
             publish_time: Time to publish (HH:MM)

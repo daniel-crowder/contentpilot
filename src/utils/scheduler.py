@@ -82,6 +82,10 @@ class ContentScheduler:
         # Prepare kwargs for the platform
         kwargs = {}
 
+        # Add content ID if available (for checking if already published)
+        if 'id' in row:
+            kwargs['content_id'] = row['id']
+
         # Add title for Substack
         if platform_name == 'substack' and 'title' in row:
             kwargs['title'] = row['title']
@@ -91,6 +95,18 @@ class ContentScheduler:
                 kwargs['subtitle'] = row['subtitle']
 
             # Add draft status for Substack if available
+            if 'is_draft' in row:
+                kwargs['is_draft'] = row['is_draft']
+
+        # Add title for WordPress
+        if platform_name == 'wordpress' and 'title' in row:
+            kwargs['title'] = row['title']
+
+            # Add excerpt if available (using subtitle as excerpt)
+            if 'subtitle' in row:
+                kwargs['excerpt'] = row['subtitle']
+
+            # Add draft status for WordPress if available
             if 'is_draft' in row:
                 kwargs['is_draft'] = row['is_draft']
 

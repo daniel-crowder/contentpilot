@@ -201,12 +201,13 @@ class PlatformCredential(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    platform = Column(String(50), nullable=False)  # twitter, linkedin, substack
+    platform = Column(String(50), nullable=False)  # twitter, linkedin, substack, wordpress
     access_token = Column(Text, nullable=False)
     refresh_token = Column(Text)
     token_type = Column(String(50))
     expires_at = Column(DateTime)
     scope = Column(String(255))
+    token_data = Column(Text)  # Store additional token data as JSON
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 

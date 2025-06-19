@@ -240,17 +240,23 @@ def check_formatting_issues(df):
             issues.append(f"Column '{col}' has empty values")
 
     # Check platform values
-    valid_platforms = ['twitter', 'linkedin', 'substack']
+    valid_platforms = ['twitter', 'linkedin', 'substack', 'wordpress']
     invalid_platforms = df[~df['platform'].isin(valid_platforms)]['platform'].unique()
     if len(invalid_platforms) > 0:
         issues.append(f"Invalid platform values: {', '.join(invalid_platforms)}")
 
-    # Check if title is provided for Substack
+    # Check if title is provided for Substack and WordPress
     if 'substack' in df['platform'].values:
         if 'title' not in df.columns:
             issues.append("Column 'title' is required for Substack content")
         elif df[df['platform'] == 'substack']['title'].isnull().any():
             issues.append("Substack content requires a title")
+
+    if 'wordpress' in df['platform'].values:
+        if 'title' not in df.columns:
+            issues.append("Column 'title' is required for WordPress content")
+        elif df[df['platform'] == 'wordpress']['title'].isnull().any():
+            issues.append("WordPress content requires a title")
 
     # Check publish_date format
     try:

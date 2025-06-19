@@ -26,15 +26,15 @@ def init_db():
     Initialize the database by creating all tables.
     """
     # Import all models to ensure they're registered with Base
-    from .models import Content, PublishingHistory, User, Team, MediaAttachment
-    
+    from .models import Content, PublishingHistory, User, Team, MediaAttachment, PlatformCredential, ContentTemplate, ContentAnalytics
+
     # Create all tables
     Base.metadata.create_all(engine)
 
 def get_session():
     """
     Get a database session.
-    
+
     Returns:
         SQLAlchemy session
     """
@@ -43,7 +43,7 @@ def get_session():
 def close_session(session):
     """
     Close a database session.
-    
+
     Args:
         session: SQLAlchemy session to close
     """

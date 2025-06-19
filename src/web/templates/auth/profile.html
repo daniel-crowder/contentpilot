@@ -88,6 +88,29 @@
                                 </div>
                             </div>
 
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">WordPress</h5>
+                                        {% if wordpress_connected %}
+                                            <p class="text-success">
+                                                <i class="bi bi-check-circle-fill"></i> Connected
+                                                {% if wordpress_blog_url %}
+                                                    <br><small>Blog: {{ wordpress_blog_url }}</small>
+                                                {% endif %}
+                                                {% if wordpress_expires_at %}
+                                                    <br><small>Expires: {{ wordpress_expires_at.strftime('%Y-%m-%d') }}</small>
+                                                {% endif %}
+                                            </p>
+                                            <a href="{{ url_for('auth.wordpress_authorize') }}" class="btn btn-outline-primary">Reconnect</a>
+                                        {% else %}
+                                            <p class="text-muted">Not connected</p>
+                                            <a href="{{ url_for('auth.wordpress_authorize') }}" class="btn btn-primary">Connect to WordPress</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Add other platforms here in the future -->
                         </div>
                     </div>

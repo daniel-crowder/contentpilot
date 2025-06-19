@@ -14,6 +14,7 @@ from ..auth import load_user
 from ...platforms.twitter import TwitterPlatform
 from ...platforms.linkedin import LinkedInPlatform
 from ...platforms.substack import SubstackPlatform
+from ...platforms.wordpress import WordPressPlatform
 from ...utils.scheduler import ContentScheduler
 from ...data_sources.database_source import DatabaseDataSource
 
@@ -85,9 +86,9 @@ def create():
                 flash('Platform, content, and publish date are required', 'error')
                 return render_template('content/create.html', templates=templates)
 
-            # Validate that title is provided for Substack
-            if platform == 'substack' and not title:
-                flash('Title is required for Substack content', 'error')
+            # Validate that title is provided for Substack and WordPress
+            if (platform == 'substack' or platform == 'wordpress') and not title:
+                flash(f'Title is required for {platform.capitalize()} content', 'error')
                 return render_template('content/create.html', templates=templates)
 
             # Create new content
@@ -267,9 +268,9 @@ def publish(content_id):
         content.publish_time = request.form.get('publish_time', '09:00')
         content.is_draft = 'is_draft' in request.form
 
-        # Validate that title is provided for Substack
-        if content.platform == 'substack' and not content.title:
-            flash('Title is required for Substack content', 'error')
+        # Validate that title is provided for Substack and WordPress
+        if (content.platform == 'substack' or content.platform == 'wordpress') and not content.title:
+            flash(f'Title is required for {content.platform.capitalize()} content', 'error')
             return redirect(url_for('content.edit', content_id=content_id))
 
         # Save changes
@@ -279,6 +280,7 @@ def publish(content_id):
         from ...platforms.twitter import TwitterPlatform
         from ...platforms.linkedin import LinkedInPlatform
         from ...platforms.substack import SubstackPlatform
+        from ...platforms.wordpress import WordPressPlatform
         from ...utils.scheduler import ContentScheduler
         from ...data_sources.database_source import DatabaseDataSource
 
@@ -291,6 +293,8 @@ def publish(content_id):
             platforms['linkedin'] = LinkedInPlatform(user_id=current_user.id)
         elif content.platform == 'substack':
             platforms['substack'] = SubstackPlatform()
+        elif content.platform == 'wordpress':
+            platforms['wordpress'] = WordPressPlatform(user_id=current_user.id)
 
         # Set up data source
         data_source = DatabaseDataSource()
@@ -402,9 +406,9 @@ def create_and_publish():
             flash('Platform, content, and publish date are required', 'error')
             return redirect(url_for('content.create'))
 
-        # Validate that title is provided for Substack
-        if platform == 'substack' and not title:
-            flash('Title is required for Substack content', 'error')
+        # Validate that title is provided for Substack and WordPress
+        if (platform == 'substack' or platform == 'wordpress') and not title:
+            flash(f'Title is required for {platform.capitalize()} content', 'error')
             return redirect(url_for('content.create'))
 
         # Create new content
@@ -455,6 +459,7 @@ def create_and_publish():
             from ...platforms.twitter import TwitterPlatform
             from ...platforms.linkedin import LinkedInPlatform
             from ...platforms.substack import SubstackPlatform
+            from ...platforms.wordpress import WordPressPlatform
             from ...utils.scheduler import ContentScheduler
             from ...data_sources.database_source import DatabaseDataSource
 
@@ -467,6 +472,8 @@ def create_and_publish():
                 platforms['linkedin'] = LinkedInPlatform(user_id=current_user.id)
             elif platform == 'substack':
                 platforms['substack'] = SubstackPlatform()
+            elif platform == 'wordpress':
+                platforms['wordpress'] = WordPressPlatform(user_id=current_user.id)
 
             # Set up data source
             data_source = DatabaseDataSource()
@@ -486,6 +493,10 @@ def create_and_publish():
                     flash(f"Error publishing to {result.get('platform')}: {result.get('error')}", 'error')
                 else:
                     # Mark as published in the database
+                    # Close the current session and get a new one for mark_as_published
+                    close_session(session)
+                    session = None  # Prevent the finally block from trying to close it again
+
                     data_source.mark_as_published(
                         content_id=new_content.id,
                         platform_post_id=result.get('id'),
@@ -754,6 +765,9 @@ def bulk_action(action):
             published_count = 0
             error_count = 0
 
+            # Store results to process after closing the session
+            publish_results = []
+
             # Set up data source
             data_source = DatabaseDataSource()
 
@@ -771,6 +785,8 @@ def bulk_action(action):
                     platforms['linkedin'] = LinkedInPlatform(user_id=current_user.id)
                 elif content.platform == 'substack':
                     platforms['substack'] = SubstackPlatform()
+                elif content.platform == 'wordpress':
+                    platforms['wordpress'] = WordPressPlatform(user_id=current_user.id)
                 else:
                     error_count += 1
                     continue
@@ -789,17 +805,29 @@ def bulk_action(action):
                     if result.get('status') == 'error':
                         error_count += 1
                     else:
-                        # Mark as published in the database
-                        data_source.mark_as_published(
-                            content_id=content.id,
-                            platform_post_id=result.get('id'),
-                            platform_post_url=result.get('url'),
-                            status='success'
-                        )
+                        # Store the result to process after closing the session
+                        publish_results.append({
+                            'content_id': content.id,
+                            'platform_post_id': result.get('id'),
+                            'platform_post_url': result.get('url')
+                        })
                         published_count += 1
 
                 except Exception as e:
                     error_count += 1
+
+            # Close the session before marking content as published
+            close_session(session)
+            session = None  # Prevent the finally block from trying to close it again
+
+            # Now mark all content as published
+            for result in publish_results:
+                data_source.mark_as_published(
+                    content_id=result['content_id'],
+                    platform_post_id=result['platform_post_id'],
+                    platform_post_url=result['platform_post_url'],
+                    status='success'
+                )
 
             if published_count > 0:
                 flash(f'Successfully published {published_count} content items', 'success')

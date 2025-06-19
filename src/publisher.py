@@ -14,6 +14,7 @@ from .data_sources.database_source import DatabaseDataSource
 from .platforms.twitter import TwitterPlatform
 from .platforms.linkedin import LinkedInPlatform
 from .platforms.substack import SubstackPlatform
+from .platforms.wordpress import WordPressPlatform
 from .utils.scheduler import ContentScheduler
 from .utils.logger import get_default_logger
 
@@ -117,6 +118,16 @@ def setup_platforms(config: Dict[str, Any]):
             email=substack_config.get('email'),
             password=substack_config.get('password'),
             cookie=substack_config.get('cookie')
+        )
+
+    # Set up WordPress platform if enabled
+    if config.get('wordpress', {}).get('enabled', False):
+        wordpress_config = config.get('wordpress', {})
+        platforms['wordpress'] = WordPressPlatform(
+            site_url=wordpress_config.get('site_url'),
+            username=wordpress_config.get('username'),
+            password=wordpress_config.get('password'),
+            application_password=wordpress_config.get('application_password')
         )
 
     return platforms
